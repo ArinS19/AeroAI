@@ -1,0 +1,44 @@
+# Environment / secrets 
+.env 
+.env.* 
+!.env.example 
+*.pem 
+*.key 
+credentials.json 
+ 
+# Python 
+.venv/ 
+venv/ 
+__pycache__/ 
+*.py[cod] 
+.pytest_cache/ 
+.mypy_cache/ 
+ 
+# Node / React 
+node_modules/ 
+dist/ 
+.vite/ 
+ 
+# Java / Spring Boot 
+target/ 
+*.class 
+ 
+# IDEs 
+.idea/ 
+.vscode/ 
+*.iml 
+ 
+# OS 
+.DS_Store 
+Thumbs.db 
+ 
+# Logs 
+*.log 
+ 
+# Local databases / generated files 
+*.db 
+*.sqlite 
+*.sqlite3 
+ 
+# Local OpenSky credentials 
+opensky_api_creds/ 

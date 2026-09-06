@@ -1,0 +1,28 @@
+# Test profile: exercises the REAL local PostgreSQL + Redis instances
+# (docker containers aatmp-postgres / aatmp-redis) rather than mocks, per
+# project policy of validating real local integrations wherever possible.
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/aatmp
+    username: aatmp
+    password: aatmp_dev_password
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+aeroai:
+  jwt:
+    secret: test-only-secret-key-not-for-production-use-32bytes-minimum-xx
+  opensky:
+    credentials-file: ""
+    client-id: ""
+    client-secret: ""
+    # Avoid hammering the real OpenSky API repeatedly during a test run;
+    # one ingestion cycle still fires shortly after context startup.
+    poll-interval-seconds: 999999
+  ml:
+    service-url: http://127.0.0.1:8000

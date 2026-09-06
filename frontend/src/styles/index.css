@@ -1,0 +1,119 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-base: #0A0E12;
+    --color-surface: #12171D;
+    --color-cyan: #22D3EE;
+    --color-blue: #3B82F6;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background-color: #0A0E12;
+    color: #E2E8F0;
+    font-family: Inter, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Tabular figures for all numeric content */
+  .font-mono,
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Leaflet map styling overrides */
+  .leaflet-container {
+    background: #0A0E12;
+    font-family: inherit;
+  }
+
+  .leaflet-control-zoom a {
+    background-color: #12171D !important;
+    border-color: #1E2A35 !important;
+    color: #E2E8F0 !important;
+  }
+
+  .leaflet-control-zoom a:hover {
+    background-color: #1E2A35 !important;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #0A0E12;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #263344;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #1E2A35;
+  }
+}
+
+@layer components {
+  /* Aviation-style number display */
+  .avia-num {
+    @apply font-mono tabular-nums text-right;
+  }
+
+  /* Unavailable text — muted italic per spec §3.1 */
+  .unavailable {
+    @apply text-state-gray italic text-sm;
+  }
+
+  /* Status badge base */
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium tracking-wide;
+  }
+
+  /* Panel surface */
+  .panel {
+    @apply bg-aero-surface border border-aero-border rounded-lg;
+  }
+
+  /* Input field */
+  .aero-input {
+    @apply w-full bg-aero-muted border border-aero-border rounded-md px-3 py-2 text-sm
+           text-slate-200 placeholder-state-gray
+           focus:outline-none focus:ring-1 focus:ring-aero-cyan focus:border-aero-cyan
+           transition-colors;
+  }
+
+  /* Button primary */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md
+           bg-aero-cyan text-aero-base font-semibold text-sm
+           hover:bg-cyan-300 active:bg-cyan-400
+           transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Button secondary */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md
+           bg-aero-muted border border-aero-border text-slate-200 font-medium text-sm
+           hover:bg-aero-border active:bg-aero-border
+           transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+}

@@ -1,0 +1,16 @@
+# Docker Compose overrides. Activate with SPRING_PROFILES_ACTIVE=docker.
+# Inter-service URLs use Docker Compose service names instead of localhost.
+spring:
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://postgres:5432/aatmp}
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+
+aeroai:
+  ml:
+    service-url: ${ML_SERVICE_URL:http://ml:8000}
+  opensky:
+    # Inside Docker there is no host-mounted credentials.json by default;
+    # rely on OPENSKY_CLIENT_ID / OPENSKY_CLIENT_SECRET env vars instead.
+    credentials-file: ${OPENSKY_CREDENTIALS_FILE:}

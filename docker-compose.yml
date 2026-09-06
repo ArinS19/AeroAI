@@ -1,0 +1,79 @@
+# AeroAI local infrastructure (Section 69/71).
+# Usage:
+#   docker compose up -d postgres redis         # infra only, run backend/ml locally for fast iteration
+#   docker compose up --build                   # full stack (backend + ml + postgres + redis)
+#
+# The frontend is intentionally NOT included yet (backend-first implementation phase).
+# Only `backend` is exposed to talk to `postgres`/`redis`/`ml` - nothing else joins that network path from outside.
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: aeroai-postgres
+    environment:
+      POSTGRES_DB: aatmp
+      POSTGRES_USER: aatmp
+      POSTGRES_PASSWORD: aatmp_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - aeroai-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aatmp -d aatmp"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7.2
+    container_name: aeroai-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  ml:
+    build:
+      context: .
+      dockerfile: ml/Dockerfile
+    container_name: aeroai-ml
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: aeroai-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ml:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DATABASE_URL: jdbc:postgresql://postgres:5432/aatmp
+      DATABASE_USERNAME: aatmp
+      DATABASE_PASSWORD: aatmp_dev_password
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      ML_SERVICE_URL: http://ml:8000
+      JWT_SECRET: ${JWT_SECRET:?set a strong JWT_SECRET in your .env file}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      OPENSKY_CLIENT_ID: ${OPENSKY_CLIENT_ID:-}
+      OPENSKY_CLIENT_SECRET: ${OPENSKY_CLIENT_SECRET:-}
+    ports:
+      - "8080:8080"
+
+volumes:
+  aeroai-postgres-data:

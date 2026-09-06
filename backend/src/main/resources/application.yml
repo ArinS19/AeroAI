@@ -1,0 +1,135 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: aeroai-backend
+
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/aatmp}
+    username: ${DATABASE_USERNAME:aatmp}
+    password: ${DATABASE_PASSWORD:aatmp_dev_password}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 3000ms
+
+  jackson:
+    time-zone: UTC
+    default-property-inclusion: non_null
+
+  web:
+    resources:
+      add-mappings: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+
+logging:
+  level:
+    root: INFO
+    com.aeroai.backend: INFO
+
+# ---------------------------------------------------------------------------
+# AeroAI application configuration (Section 94 of IMPLEMENT_v2.md)
+# Every tunable threshold in the spec is bound here as a named, overridable
+# property rather than a magic number in code.
+# ---------------------------------------------------------------------------
+aeroai:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
+
+  jwt:
+    secret: ${JWT_SECRET:dev-only-insecure-secret-change-me-please-32-bytes-min-xxxxxxxxxxxxx}
+    expiry-minutes: ${JWT_EXPIRY_MINUTES:60}
+
+  security:
+    bcrypt-strength: ${BCRYPT_STRENGTH:10}
+
+  opensky:
+    credentials-file: ${OPENSKY_CREDENTIALS_FILE:}
+    client-id: ${OPENSKY_CLIENT_ID:}
+    client-secret: ${OPENSKY_CLIENT_SECRET:}
+    oauth-token-url: ${OPENSKY_OAUTH_TOKEN_URL:https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token}
+    api-base-url: ${OPENSKY_API_BASE_URL:https://opensky-network.org/api}
+    poll-interval-seconds: ${OPENSKY_POLL_INTERVAL_SECONDS:15}
+    bounding-box:
+      lamin: ${OPENSKY_BBOX_LAMIN:5}
+      lomin: ${OPENSKY_BBOX_LOMIN:60}
+      lamax: ${OPENSKY_BBOX_LAMAX:38}
+      lomax: ${OPENSKY_BBOX_LOMAX:100}
+
+  ml:
+    service-url: ${ML_SERVICE_URL:http://127.0.0.1:8000}
+
+  airspace:
+    default-city-id: ${AIRSPACE_DEFAULT_CITY_ID:mumbai}
+    max-active-city-count: ${AIRSPACE_MAX_ACTIVE_CITY_COUNT:1}
+    request-cache-ttl-seconds: ${AIRSPACE_REQUEST_CACHE_TTL_SECONDS:120}
+
+  freshness:
+    live-threshold-seconds: ${LIVE_THRESHOLD_SECONDS:20}
+    unavailable-threshold-seconds: ${UNAVAILABLE_THRESHOLD_SECONDS:90}
+    aircraft-stale-threshold-seconds: ${AIRCRAFT_STALE_THRESHOLD_SECONDS:90}
+
+  trail:
+    retention-minutes: ${TRAIL_RETENTION_MINUTES:60}
+
+  history:
+    retention-days: ${HISTORY_RETENTION_DAYS:7}
+
+  prediction:
+    cache-ttl-seconds: ${PREDICTION_CACHE_TTL_SECONDS:900}
+    retention-days: ${PREDICTION_RETENTION_DAYS:7}
+
+  alert:
+    retention-days: ${ALERT_RETENTION_DAYS:30}
+    delay-change-threshold-minutes: ${ALERT_DELAY_CHANGE_THRESHOLD_MINUTES:15}
+    dedup-window-seconds: ${ALERT_DEDUP_WINDOW_SECONDS:300}
+
+  conflict:
+    high-horizontal-m: ${CONFLICT_HIGH_HORIZONTAL_M:3000}
+    high-vertical-m: ${CONFLICT_HIGH_VERTICAL_M:150}
+    medium-horizontal-m: ${CONFLICT_MEDIUM_HORIZONTAL_M:9000}
+    medium-vertical-m: ${CONFLICT_MEDIUM_VERTICAL_M:300}
+    prediction-horizon-seconds: ${CONFLICT_PREDICTION_HORIZON_SECONDS:300}
+    candidate-radius-km: ${CONFLICT_CANDIDATE_RADIUS_KM:50}
+
+  analytics:
+    timezone: ${ANALYTICS_TIMEZONE:Asia/Kolkata}
+
+  map:
+    default-center-lat: ${MAP_DEFAULT_CENTER_LAT:22.0}
+    default-center-lon: ${MAP_DEFAULT_CENTER_LON:79.0}
+    default-zoom: ${MAP_DEFAULT_ZOOM:5}
+
+  weather:
+    cache-ttl-minutes: ${WEATHER_CACHE_TTL_MINUTES:15}
+    open-meteo-base-url: ${OPEN_METEO_BASE_URL:https://api.open-meteo.com/v1/forecast}

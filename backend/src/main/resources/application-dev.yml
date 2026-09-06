@@ -1,0 +1,18 @@
+# Local development overrides.
+# Activate with SPRING_PROFILES_ACTIVE=dev (default when running via `mvn spring-boot:run` locally).
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+logging:
+  level:
+    com.aeroai.backend: DEBUG
+
+aeroai:
+  opensky:
+    # Local dev convenience: point at the external credentials.json produced by
+    # the OpenSky account page. This file lives OUTSIDE the repository and is
+    # never committed (see .gitignore). If unset/unreachable, the backend
+    # falls back to anonymous OpenSky access at reduced rate limits.
+    credentials-file: ${OPENSKY_CREDENTIALS_FILE:C:\Coding\AATMP\opensky_api_creds\credentials.json}
