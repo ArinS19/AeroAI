@@ -82,7 +82,10 @@ export function FlightDetailPanel({ icao24, onClose, showMiniMap = true, onTrail
     );
   }
 
-  const hasRoute = !!(flight.origin || flight.destination || flight.departureTime || flight.arrivalTime);
+  // Route fields (origin/destination/times) are always null today because
+  // OpenSky state vectors carry no flight-plan data (§18.2, §BACKEND_FRONTEND_HANDOFF.md).
+  // The section always renders so the user sees honest "Unavailable" values
+  // rather than a hidden section, per §28/§3.1.
   const hasCurrent = !!flight.currentPosition;
   const hasProgress = flight.distanceTravelledKm !== null || flight.distanceRemainingKm !== null || flight.estimatedArrival !== null;
   const hasWeather = !!flight.weather && Object.values(flight.weather).some((v) => v !== null);
@@ -107,14 +110,32 @@ export function FlightDetailPanel({ icao24, onClose, showMiniMap = true, onTrail
       </div>
 
       <div className="flex-1 overflow-y-auto px-4">
-        {hasRoute && (
-          <Section title="ROUTE">
-            <Row label="Origin">{flight.origin?.name ?? <UnavailableText />}</Row>
-            <Row label="Destination">{flight.destination?.name ?? <UnavailableText />}</Row>
-            <Row label="Departure">{flight.departureTime ? formatTimestamp(flight.departureTime) : <UnavailableText />}</Row>
-            <Row label="Arrival">{flight.arrivalTime ? formatTimestamp(flight.arrivalTime) : <UnavailableText />}</Row>
-          </Section>
-        )}
+        <Section title="ROUTE">
+          {/* Origin and destination are currently unavailable: OpenSky live state
+              vectors carry no flight-plan information (route, origin, destination).
+              These fields will populate automatically if a reliable schedule source
+              is ever added to the backend, without any frontend change. */}
+          <Row label="Origin">
+            {flight.origin ? (
+              `${flight.origin.name}${flight.origin.iata ? ` (${flight.origin.iata})` : ''}`
+            ) : (
+              <UnavailableText />
+            )}
+          </Row>
+          <Row label="Destination">
+            {flight.destination ? (
+              `${flight.destination.name}${flight.destination.iata ? ` (${flight.destination.iata})` : ''}`
+            ) : (
+              <UnavailableText />
+            )}
+          </Row>
+          <Row label="Departure">
+            {flight.departureTime ? formatTimestamp(flight.departureTime) : <UnavailableText />}
+          </Row>
+          <Row label="Arrival">
+            {flight.arrivalTime ? formatTimestamp(flight.arrivalTime) : <UnavailableText />}
+          </Row>
+        </Section>
 
         {hasCurrent && (
           <Section title="CURRENT">

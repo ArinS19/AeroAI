@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { NavLink, Link } from 'react-router-dom';
+import { NavLink, Link, useLocation } from 'react-router-dom';
 import { Logo } from './Logo';
 import { AccountMenu } from './AccountMenu';
 import { NotificationBell } from '../alerts/NotificationBell';
@@ -17,6 +17,14 @@ const NAV_ITEMS = [
 export function Header() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const location = useLocation();
+
+  // When already on the map page, preserve the current airspace query param
+  // so clicking "Map" in the nav doesn\'t silently drop the selected city.
+  // From any other page, just navigate to /map (default city will apply).
+  const mapNavTo = location.pathname.startsWith('/map')
+    ? `${location.pathname}${location.search}`
+    : '/map';
 
   useEffect(() => {
     if (mobileSearchOpen) document.body.style.overflow = 'hidden';
@@ -38,7 +46,7 @@ export function Header() {
             {NAV_ITEMS.map((item) => (
               <NavLink
                 key={item.to}
-                to={item.to}
+                to={item.to === '/map' ? mapNavTo : item.to}
                 className={({ isActive }) =>
                   `px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive ? 'text-aero-cyan bg-aero-cyan/10' : 'text-slate-300 hover:text-slate-100 hover:bg-aero-muted'

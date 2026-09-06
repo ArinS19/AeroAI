@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import type { AircraftDto, AircraftDeltaMessage } from '../types';
 import { useWebSocket } from './useWebSocket';
 
@@ -58,6 +58,13 @@ export function useLiveAircraft(cityId: string | null): UseLiveAircraftResult {
     });
     setLastDeltaTimestamp(delta.timestamp);
   }, []);
+
+  // Clear the aircraft map immediately when the city changes so markers
+  // from the previous city never bleed into the new city's view while
+  // the incoming REST snapshot is in-flight (§13.2.1).
+  useEffect(() => {
+    setAircraftRef.current(new Map());
+  }, [cityId]);
 
   useWebSocket({
     cityId,

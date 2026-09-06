@@ -1,0 +1,10 @@
+docker start aatmp-postgres
+docker start aatmp-redis
+cd C:\Coding\AATMP_Project\backend; $env:OPENSKY_CREDENTIALS_FILE="C:\Coding\AATMP\opensky_api_creds\credentials.json"; $env:AIRSPACE_MAX_ACTIVE_CITY_COUNT="5"; mvn spring-boot:run
+
+
+
+cd C:\Coding\AATMP_Project\frontend; npm run dev
+
+cd C:\Coding\AATMP_Project; .venv\Scripts\python.exe -m uvicorn ml.api.main:app --port 8000
+

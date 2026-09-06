@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Polyline, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -11,8 +11,6 @@ interface LeafletMapProps {
   nearbyAirports: AirportRefDto[];
   center: [number, number];
   zoom: number;
-  bounds: L.LatLngBoundsExpression | null;
-  flyToKey: string; // changes when the selected city changes (or reset is clicked) -> triggers flyTo
   selectedIcao24: string | null;
   conflictIcaos: Set<string>;
   trailPoints: [number, number][];
@@ -22,40 +20,28 @@ interface LeafletMapProps {
   onZoomChange: (zoom: number) => void;
 }
 
+/**
+ * MapController — purely provides the map instance to the parent via onMapReady
+ * and tracks zoom changes. Centering/fly-to is handled imperatively in MapPage
+ * once both the map instance and the target airspace data are available.
+ */
 function MapController({
-  center,
-  zoom,
-  bounds,
-  flyToKey,
   onMapReady,
   onZoomChange,
 }: {
-  center: [number, number];
-  zoom: number;
-  bounds: L.LatLngBoundsExpression | null;
-  flyToKey: string;
   onMapReady: (map: L.Map) => void;
   onZoomChange: (zoom: number) => void;
 }) {
   const map = useMap();
-  const initialized = useRef(false);
+  const reported = useRef(false);
 
-  useEffect(() => {
-    onMapReady(map);
-  }, [map, onMapReady]);
-
-  useEffect(() => {
-    if (!initialized.current) {
-      initialized.current = true;
-      return; // MapContainer already applied initial center/zoom
-    }
-    if (bounds) {
-      map.flyToBounds(bounds, { padding: [40, 40], duration: 0.8 });
-    } else {
-      map.flyTo(center, zoom, { duration: 0.8 });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [flyToKey]);
+  // Report the map instance to the parent exactly once per mount.
+  if (!reported.current) {
+    reported.current = true;
+    // Schedule via microtask so React's render cycle has committed before
+    // the parent attempts to call map methods.
+    Promise.resolve().then(() => onMapReady(map));
+  }
 
   useMapEvents({
     zoomend: () => onZoomChange(map.getZoom()),
@@ -69,8 +55,6 @@ export function LeafletMap({
   nearbyAirports,
   center,
   zoom,
-  bounds,
-  flyToKey,
   selectedIcao24,
   conflictIcaos,
   trailPoints,
@@ -79,14 +63,13 @@ export function LeafletMap({
   onMapReady,
   onZoomChange,
 }: LeafletMapProps) {
-  const [currentZoom, setCurrentZoomState] = useState(zoom);
+  const [currentZoom, setCurrentZoom] = useState(zoom);
+  const airportIcon = useMemo(() => buildAirportIcon(), []);
 
   function handleZoomChange(z: number) {
-    setCurrentZoomState(z);
+    setCurrentZoom(z);
     onZoomChange(z);
   }
-
-  const airportIcon = useMemo(() => buildAirportIcon(), []);
 
   return (
     <MapContainer
@@ -94,6 +77,7 @@ export function LeafletMap({
       zoom={zoom}
       zoomControl={false}
       className="w-full h-full"
+      style={{ height: '100%', width: '100%' }}
       worldCopyJump
     >
       <TileLayer
@@ -102,14 +86,7 @@ export function LeafletMap({
         maxZoom={19}
       />
 
-      <MapController
-        center={center}
-        zoom={zoom}
-        bounds={bounds}
-        flyToKey={flyToKey}
-        onMapReady={onMapReady}
-        onZoomChange={handleZoomChange}
-      />
+      <MapController onMapReady={onMapReady} onZoomChange={handleZoomChange} />
 
       {nearbyAirports.map((a) => (
         <Marker
@@ -128,6 +105,8 @@ export function LeafletMap({
       )}
 
       {aircraft.map((a) => {
+        if (a.latitude === null || a.longitude === null) return null;
+
         const isSelected = a.icao24 === selectedIcao24;
         const inConflict = conflictIcaos.has(a.icao24);
         const showLabel =
@@ -144,8 +123,6 @@ export function LeafletMap({
           onGround: a.onGround,
         });
 
-        if (a.latitude === null || a.longitude === null) return null;
-
         return (
           <Marker
             key={a.icao24}
@@ -159,4 +136,3 @@ export function LeafletMap({
     </MapContainer>
   );
 }
-
