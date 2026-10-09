@@ -8,3 +8,4 @@ cd C:\Coding\AATMP_Project\frontend; npm run dev
 
 cd C:\Coding\AATMP_Project; .venv\Scripts\python.exe -m uvicorn ml.api.main:app --port 8000
 
+
